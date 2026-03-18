@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drive Cars Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="main-content">
+    <div class="tabs-wrapper">
+      <div class="item active" data-tab="europe">
+        <div class="title">Калькулятор <span>Європа</span></div>
+      </div>
+      <div class="item" data-tab="usa">
+        <div class="title">Калькулятор <span>США</span></div>
+      </div>
+    </div>
+
+    <div class="manager-bar">
+      <div class="manager-field">
+        <div class="title">Менеджер</div>
+        <select id="managerName">
+          <option value="Артем">Артем</option>
+          <option value="Ігор">Ігор</option>
+          <option value="Назар">Назар</option>
+          <option value="Олександр">Олександр</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="calculate-wrapper Europe active" id="tab-europe">
+      <div class="card-item inputs">
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Країна</div>
+            <select id="countryEurope">
+              <option value="0">DE</option>
+              <option value="1">PL</option>
+              <option value="2">FR</option>
+              <option value="3">NL</option>
+              <option value="4">AT</option>
+              <option value="5">BE</option>
+              <option value="6">ES</option>
+              <option value="7">SE</option>
+              <option value="8">IT</option>
+              <option value="9">PT</option>
+            </select>
+          </div>
+          <div class="item">
+            <div class="title">Рік випуску автомобіля</div>
+            <input type="number" id="yearEurope" placeholder="Введіть значення" />
+          </div>
+        </div>
+
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Введіть вартість авто</div>
+            <input type="number" id="priceEurope" placeholder="Введіть значення" />
+          </div>
+          <div class="item">
+            <div class="title">Тип двигуна</div>
+            <select id="fuelEurope">
+              <option value="0">Бензиновий</option>
+              <option value="1">Дизельний</option>
+              <option value="2">Електричний</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Доставка по Європі</div>
+            <input type="number" id="deliveryEurope" placeholder="Введіть значення" />
+          </div>
+          <div class="item">
+            <div class="title">Об’єм двигуна</div>
+            <input type="number" id="engineEurope" placeholder="Введіть значення" />
+          </div>
+        </div>
+
+        <div class="line-inputs toggles">
+          <div class="item small">
+            <div class="title">Адресна доставка</div>
+            <label class="switch"><input type="checkbox" id="addressEurope"><span class="slider"></span></label>
+          </div>
+          <div class="item small">
+            <div class="title">Кнопка</div>
+            <label class="switch"><input type="checkbox" id="buttonEurope"><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="btns-wrapper">
+          <button type="button" class="btn" id="calcEurope" onclick="calculateEurope(1)">Розрахувати вартість</button>
+          <button type="button" class="btn secondary" id="calcEuropeNoCustoms" onclick="calculateEurope(2)">Без розмитнення</button>
+        </div>
+      </div>
+
+      <div class="card-item outputs">
+        <div class="line"><div class="item"><div class="title">Вартість авто + аукціонний збір</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut0">0.00</div></div></div><div class="item"><div class="title">Доставка по Європі</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut1">0.00</div></div></div></div>
+        <div class="line"><div class="item"><div class="title">Послуги з підбору</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut2">0.00</div></div></div><div class="item"><div class="title">Swift переказ</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut3">0.00</div></div></div></div>
+        <div class="line"><div class="item"><div class="title">Розмитнення</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut4">0.00</div></div></div><div class="item"><div class="title">Послуги супроводу та документації</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut5">0.00</div></div></div></div>
+        <div class="line last-line"><div class="item"><div class="title">Адресна доставка</div><div class="value"><div class="currency">€</div><div class="numeric" id="euOut6">0.00</div></div></div><div class="item all-result"><div class="title">Загальна вартість авто</div><div class="all-price"><div class="numeric" id="euOut7">0.00</div><div class="currency">€</div></div><div class="payment-note"><div class="text">Оплатити протягом 3-х днів</div><div class="numeric" id="euOut8">0.00 €</div></div></div></div>
+        <div class="profit-box">
+          <div><span>Собівартість:</span> <strong id="euRealCost">0.00 €</strong></div>
+          <div><span>Чистий прибуток:</span> <strong id="euProfit">0.00 €</strong></div>
+          <div class="status" id="euStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calculate-wrapper USA" id="tab-usa">
+      <div class="card-item inputs">
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Введіть вартість авто</div>
+            <input type="number" id="priceUSA" placeholder="Введіть значення" />
+          </div>
+          <div class="item">
+            <div class="title">Штат</div>
+            <input type="text" id="stateSearchUSA" placeholder="Пошук штату" />
+            <select id="stateUSA"></select>
+          </div>
+        </div>
+
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Тип двигуна</div>
+            <select id="fuelUSA">
+              <option value="0">Бензиновий</option>
+              <option value="1">Дизельний</option>
+              <option value="2">Електричний</option>
+            </select>
+          </div>
+          <div class="item">
+            <div class="title">Об’єм двигуна</div>
+            <input type="number" id="engineUSA" placeholder="Введіть значення" />
+          </div>
+        </div>
+
+        <div class="line-inputs">
+          <div class="item">
+            <div class="title">Рік випуску автомобіля</div>
+            <input type="number" id="yearUSA" placeholder="Введіть значення" />
+          </div>
+          <div class="item small">
+            <div class="title">Адресна доставка</div>
+            <label class="switch"><input type="checkbox" id="addressUSA" checked><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <button type="button" class="btn" id="calcUSA" onclick="calculateUSA()">Розрахувати вартість</button>
+      </div>
+
+      <div class="card-item outputs">
+        <div class="line"><div class="item"><div class="title">Вартість авто + аукціонний збір</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut0">0.00</div></div></div><div class="item"><div class="title">Брокер</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut1">0.00</div></div></div></div>
+        <div class="line"><div class="item"><div class="title">Послуги з підбору</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut2">0.00</div></div></div><div class="item"><div class="title">Доставка в порт</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut3">0.00</div></div></div></div>
+        <div class="line"><div class="item"><div class="title">Доставка морем</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut4">0.00</div></div></div><div class="item"><div class="title">Swift переказ</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut5">0.00</div></div></div></div>
+        <div class="line"><div class="item"><div class="title">Розмитнення</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut6">0.00</div></div></div><div class="item"><div class="title">Адресна доставка</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut7">0.00</div></div></div></div>
+        <div class="line last-line"><div class="item"><div class="title">Супровід та документація</div><div class="value"><div class="currency">$</div><div class="numeric" id="usOut8">0.00</div></div></div><div class="item all-result"><div class="title">Загальна вартість авто</div><div class="all-price"><div class="numeric" id="usOut9">0.00</div><div class="currency">$</div></div><div class="payment-note"><div class="text">Оплатити протягом 3-х днів</div><div class="numeric" id="usOut10">0.00 $</div></div></div></div>
+        <div class="profit-box">
+          <div><span>Собівартість:</span> <strong id="usRealCost">0.00 $</strong></div>
+          <div><span>Чистий прибуток:</span> <strong id="usProfit">0.00 $</strong></div>
+          <div class="status" id="usStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
