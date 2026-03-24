@@ -1,3 +1,10 @@
+// =========================
+// DRIVE CARS CALCULATOR
+// Основа: твій оригінальний калькулятор
+// Логіка розрахунку збережена максимально близько
+// =========================
+
+// Дані про США
 const statesInfo = [
     {state: "ABILENE - TX", price: 420, port: 3},
     {state: "ACE - Carson (CA)", price: 345, port: 4},
@@ -357,6 +364,98 @@ const statesInfo = [
     {state: "Winnipeg", price: 1500, port: 8}
 ];
 
+let course = [];
+course['USD'] = 41.65;
+course['EUR'] = 44.2;
+course['UAH'] = 1;
+
+let eurToUSD = 1.054;
+let usdToEUR = 1.062;
+
+const calc_USA = document.querySelector(".calculate-wrapper.USA");
+const calc_EUROPE = document.querySelector(".calculate-wrapper.Europe");
+
+let america_state = 0;
+let america_fuel = 0;
+
+let europe_country = 0;
+let europe_fuel = 0;
+
+let selectInfo = ["USD", "UAH", "EUR"];
+let setLabel = null;
+
+function safeShow(el, mode = 'flex') {
+    if (el) el.style.display = mode;
+}
+
+function tabsInit() {
+    const tabsItems = document.querySelectorAll('.tabs-wrapper .item');
+    if (!tabsItems.length) return;
+
+    tabsItems.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            tabsItems.forEach(item => item.classList.remove('active'));
+            tab.classList.add('active');
+
+            safeShow(calc_USA, 'none');
+            safeShow(calc_EUROPE, 'none');
+
+            if (i === 0) safeShow(calc_EUROPE, 'flex');
+            if (i === 1) safeShow(calc_USA, 'flex');
+        });
+    });
+}
+
+function selects() {
+    const selects = document.querySelectorAll('.select-wrapper');
+
+    selects.forEach(select => {
+        const label = select.querySelector('.current-label');
+        const variables = select.querySelector('.variables');
+        if (!label || !variables) return;
+
+        const items = variables.querySelectorAll('.item');
+
+        select.addEventListener('click', (e) => {
+            if (!e.target.closest('.variables')) {
+                e.stopPropagation();
+                variables.classList.toggle('active');
+            }
+        });
+
+        items.forEach((item, i) => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                label.textContent = item.textContent;
+                variables.classList.remove('active');
+
+                if (variables.classList.contains('state-USA')) america_state = i;
+                if (variables.classList.contains('fuel-USA')) america_fuel = i;
+                if (variables.classList.contains('country-Europe')) europe_country = i;
+                if (variables.classList.contains('fuel-Europe')) europe_fuel = i;
+
+                if (variables.classList.contains('converter-input')) {
+                    selectInfo[0] = item.textContent;
+                    if (setLabel) setLabel();
+                }
+
+                if (variables.classList.contains('converter-output')) {
+                    selectInfo[1] = item.textContent;
+                    if (setLabel) setLabel();
+                }
+            });
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.select-wrapper')) {
+            document.querySelectorAll('.select-wrapper .variables.active').forEach(v => {
+                v.classList.remove('active');
+            });
+        }
+    });
+}
+
 function getContainerPrice(sity) {
     let price = 0;
     if (sity == 1) price = 650;
@@ -372,6 +471,7 @@ function getContainerPrice(sity) {
 
 function getAuctionAmerica(carPrise) {
     let auctionFee = [0, 0];
+
     if (carPrise >= 0 && carPrise <= 49.99) auctionFee[0] = 1;
     if (carPrise >= 50 && carPrise <= 99.99) auctionFee[0] = 1;
     if (carPrise >= 100 && carPrise <= 199.99) auctionFee[0] = 25;
@@ -431,266 +531,375 @@ function getAuctionAmerica(carPrise) {
     return auctionFee[0] + auctionFee[1] + 10 + 50 + 69;
 }
 
-function formatNumber(num) {
-  return Number(num).toFixed(2).replace(/\.00$/, '.00');
-}
+function setFinalOnlyOutput(container, total, payment, currency) {
+    if (!container) return false;
 
-function setText(id, value, suffix = '') {
-  document.getElementById(id).textContent = `${formatNumber(value)}${suffix}`;
-}
+    const totalNumeric = container.querySelector(".all-price .numeric");
+    const totalCurrency = container.querySelector(".all-price .currency");
+    const paymentNumeric = container.querySelector(".payment-note .numeric");
 
-function populateStates() {
-  const select = document.getElementById('state-USA');
-  select.innerHTML = '';
-  statesInfo.forEach((item, index) => {
-    const option = document.createElement('option');
-    option.value = String(index);
-    option.textContent = item.state;
-    select.appendChild(option);
-  });
-  select.value = '0';
-}
-
-function filterStates() {
-  const query = document.getElementById('state-USA-search').value.trim().toLowerCase();
-  const select = document.getElementById('state-USA');
-  const currentValue = select.value;
-  select.innerHTML = '';
-
-  statesInfo.forEach((item, index) => {
-    if (!item.state.toLowerCase().includes(query)) return;
-    const option = document.createElement('option');
-    option.value = String(index);
-    option.textContent = item.state;
-    select.appendChild(option);
-  });
-
-  if ([...select.options].some(opt => opt.value === currentValue)) {
-    select.value = currentValue;
-  } else if (select.options.length > 0) {
-    select.selectedIndex = 0;
-  }
-}
-
-function getClearanceUSA(carPrice, auctionFee, yearRelease, engineCapacity, fuelType) {
-    if (fuelType === 2) return engineCapacity;
-    carPrice = carPrice + auctionFee + 1600;
-    let basikExcise = 0;
-    if (fuelType == 0) {
-        if (engineCapacity <= 3000) basikExcise = 50;
-        else basikExcise = 100;
-    } else if (fuelType === 1) {
-        if (engineCapacity <= 3500) basikExcise = 75;
-        else basikExcise = 150;
+    if (totalNumeric && paymentNumeric) {
+        totalNumeric.innerText = parseFloat(Number(total).toFixed(2));
+        paymentNumeric.innerText = parseFloat(Number(payment).toFixed(2)) + ` ${currency}`;
+        if (totalCurrency) totalCurrency.innerText = currency;
+        return true;
     }
 
-    let coeffYear = 2024 - yearRelease;
-    if (coeffYear < 1) coeffYear = 1;
-    else if (coeffYear > 15) coeffYear = 15;
-
-    const excise = basikExcise * (engineCapacity / 1000) * coeffYear;
-    const toll = carPrice * 0.1;
-    const pdv = (carPrice + toll + excise) * 0.2;
-    return toll + excise + pdv;
+    return false;
 }
 
-function getDynamicMarkupUSA(carPrice) {
-  const base = 2000 + 175 + 350 + 100;
-  let factor = 1;
-  if (carPrice <= 3000) factor = 0.82;
-  else if (carPrice <= 7000) factor = 0.90;
-  else if (carPrice <= 12000) factor = 1.00;
-  else if (carPrice <= 20000) factor = 1.08;
-  else if (carPrice <= 30000) factor = 1.16;
-  else factor = 1.24;
-  return +(base * factor).toFixed(2);
-}
+function USA() {
+    if (!calc_USA) return;
 
-function getDynamicMarkupEurope(carPrice) {
-  const base = 2000 + 125 + 300 + 100;
-  let factor = 1;
-  if (carPrice <= 5000) factor = 0.85;
-  else if (carPrice <= 10000) factor = 0.95;
-  else if (carPrice <= 18000) factor = 1.00;
-  else if (carPrice <= 28000) factor = 1.08;
-  else if (carPrice <= 40000) factor = 1.15;
-  else factor = 1.22;
-  return +(base * factor).toFixed(2);
-}
+    const variables_State = calc_USA.querySelector(".variables.state-USA");
+    if (variables_State && !variables_State.dataset.filled) {
+        statesInfo.forEach(item => {
+            variables_State.innerHTML += '<div class="item">' + item.state + '</div>';
+        });
+        variables_State.dataset.filled = "1";
+    }
 
-function distributeMarkup(totalMarkup, weights) {
-  const keys = Object.keys(weights);
-  const result = {};
-  let allocated = 0;
-  keys.forEach((key, index) => {
-    const value = index === keys.length - 1
-      ? totalMarkup - allocated
-      : +(totalMarkup * weights[key]).toFixed(2);
-    result[key] = value;
-    allocated += value;
-  });
-  return result;
-}
+    const variables_items = variables_State ? variables_State.querySelectorAll(".item") : [];
+    const inputState = calc_USA.querySelector(".input-state-USA");
 
-function calcUSA() {
-  const priceEl = document.getElementById('price-USA');
-  const engineEl = document.getElementById('engine-capacity-USA');
-  const yearEl = document.getElementById('year-USA');
-  const stateSelect = document.getElementById('state-USA');
-  const fuelSelect = document.getElementById('fuel-USA');
+    if (inputState) {
+        inputState.addEventListener('input', () => {
+            variables_items.forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(inputState.value.toLowerCase()) ? "block" : "none";
+            });
+        });
+    }
 
-  if (priceEl.value === '') return priceEl.focus();
-  if (engineEl.value === '') return engineEl.focus();
-  if (yearEl.value === '') return yearEl.focus();
-  if (stateSelect.value === '') return document.getElementById('state-USA-search').focus();
+    const btn_calc = calc_USA.querySelector(".btn-calc-USA");
+    if (!btn_calc) return;
 
-  const carPrice = Number(priceEl.value);
-  const yearRelease = Number(yearEl.value);
-  const engineCapacity = Number(engineEl.value);
-  const americaFuel = Number(fuelSelect.value);
-  const americaState = Number(stateSelect.value);
-  const adressDelivery = document.getElementById('usa-address-delivery').checked;
+    btn_calc.addEventListener('click', () => {
+        const l_price_USA = calc_USA.querySelector("#price-USA");
+        const l_eng_capacity_USA = calc_USA.querySelector("#engine-capacity-USA");
+        const l_year_USA = calc_USA.querySelector("#year-USA");
 
-  const auctionFeeBase = getAuctionAmerica(carPrice);
-  const deliveryPortBase = statesInfo[americaState].price;
-  const deliverySeaBase = getContainerPrice(statesInfo[americaState].port);
-  const unloadPortBase = 400;
-  const deliveryUkraineBase = 1200 + (adressDelivery ? 400 : 0);
-  const brokerBase = 250;
-  const swiftBase = 100 + (0.032 * (carPrice + auctionFeeBase));
-  const clearance = getClearanceUSA(carPrice, auctionFeeBase, yearRelease, engineCapacity, americaFuel);
+        if (!l_price_USA?.value) return l_price_USA.focus();
+        if (!l_eng_capacity_USA?.value) return l_eng_capacity_USA.focus();
+        if (!l_year_USA?.value) return l_year_USA.focus();
 
-  const hiddenMarkupTotal = getDynamicMarkupUSA(carPrice);
-  const markup = distributeMarkup(hiddenMarkupTotal, {
-    lot: 0.20,
-    port: 0.18,
-    sea: 0.18,
-    unload: 0.12,
-    ukr: 0.16,
-    broker: 0.08,
-    swift: 0.08,
-  });
+        const carPrice = Number(l_price_USA.value);
+        const yearRelease = Number(l_year_USA.value);
+        const engineCapacity = Number(l_eng_capacity_USA.value);
 
-  const lotAuction = carPrice + auctionFeeBase + markup.lot;
-  const deliveryPort = deliveryPortBase + markup.port;
-  const deliverySea = deliverySeaBase + markup.sea;
-  const unloadPort = unloadPortBase + markup.unload;
-  const deliveryUkraine = deliveryUkraineBase + markup.ukr;
-  const broker = brokerBase + markup.broker;
-  const swift = swiftBase + markup.swift;
+        let auctionFee = getAuctionAmerica(carPrice);
+        const deliveryPort = statesInfo[america_state].price + 150;
+        let deliverySea = getContainerPrice(statesInfo[america_state].port) + 600;
+        const unloadPort = 400;
+        let deliveryKiev = 1400;
+        const broker = 250;
+        const service = 500;
+        const button = 120;
+        const clearance = getClearance(carPrice, auctionFee, yearRelease, engineCapacity, america_fuel);
+        const priceSwift = (100 + (0.032 * (carPrice + auctionFee)));
+        let accompaniment = 0;
+        let markUp = 0;
 
-  const allPrice = lotAuction + deliveryPort + deliverySea + unloadPort + deliveryUkraine + broker + swift + clearance;
-  const paymentThree = lotAuction + deliveryPort + deliverySea + unloadPort + swift;
+        let allPrice = carPrice + auctionFee + deliveryPort + deliverySea + unloadPort + deliveryKiev + broker + service + accompaniment + button + clearance + priceSwift + markUp;
 
-  setText('usa-out-lot', lotAuction, ' $');
-  setText('usa-out-port', deliveryPort, ' $');
-  setText('usa-out-sea', deliverySea, ' $');
-  setText('usa-out-unload', unloadPort, ' $');
-  setText('usa-out-ukr', deliveryUkraine, ' $');
-  setText('usa-out-broker', broker, ' $');
-  setText('usa-out-swift', swift, ' $');
-  setText('usa-out-clearance', clearance, ' $');
-  setText('usa-out-total', allPrice);
-  setText('usa-out-pay', paymentThree, ' $');
-}
+        if (allPrice >= 9000 && allPrice <= 25000) {
+            auctionFee = getAuctionAmerica(carPrice) + 100;
+            deliverySea = getContainerPrice(statesInfo[america_state].port) + 800;
+            deliveryKiev = 1600;
+        } else if (allPrice > 25000 && allPrice <= 55000) {
+            auctionFee = getAuctionAmerica(carPrice) + 100;
+            deliverySea = getContainerPrice(statesInfo[america_state].port) + 800;
+            deliveryKiev = 1600;
+            accompaniment = 200;
+            markUp = 250;
+        } else if (allPrice > 55000) {
+            auctionFee = getAuctionAmerica(carPrice) + 100;
+            deliverySea = getContainerPrice(statesInfo[america_state].port) + 800;
+            deliveryKiev = 1600;
+            accompaniment = 200;
+            markUp = 750;
+        }
 
-function calculateEurope(type) {
-  const priceEl = document.getElementById('price-Europe');
-  const deliveryEl = document.getElementById('delivery-Europe');
-  const yearEl = document.getElementById('year-Europe');
-  const engineEl = document.getElementById('engine-capacity-Europe');
-  const country = Number(document.getElementById('country-Europe').value);
-  const europeFuel = Number(document.getElementById('fuel-Europe').value);
+        allPrice = carPrice + auctionFee + deliveryPort + deliverySea + unloadPort + deliveryKiev + broker + service + accompaniment + button + clearance + priceSwift + markUp;
+        const payment_Three = Number(auctionFee) + Number(carPrice) + Number(deliveryPort) + Number(deliverySea) + Number(priceSwift) + 1000;
 
-  if (priceEl.value === '') return priceEl.focus();
-  if (deliveryEl.value === '') return deliveryEl.focus();
-  if (type === 1 && yearEl.value === '') return yearEl.focus();
-  if (type === 1 && engineEl.value === '') return engineEl.focus();
+        const outputs_USA = calc_USA.querySelector(".card-item.outputs");
+        if (setFinalOnlyOutput(outputs_USA, allPrice, payment_Three, '$')) {
+            setExchangeValue(allPrice.toFixed(2));
+            return;
+        }
 
-  const priceCar = Number(priceEl.value);
-  const localDeliveryEurope = Number(deliveryEl.value);
-  const yearRelease = type === 1 ? Number(yearEl.value) : 0;
-  const engineCapacity = type === 1 ? Number(engineEl.value) : 0;
-  const adressDelivery = document.getElementById('eu-address-delivery').checked;
-  const buttonCC = document.getElementById('eu-button').checked ? 250 : 0;
+        const numerics = outputs_USA?.querySelectorAll(".item .numeric");
+        if (numerics && numerics.length >= 11) {
+            numerics[0].innerText = parseFloat((Number(auctionFee) + Number(carPrice)).toFixed(2));
+            numerics[1].innerText = parseFloat(Number(broker).toFixed(2));
+            numerics[2].innerText = parseFloat(Number(service).toFixed(2));
+            numerics[3].innerText = parseFloat(Number(deliveryPort).toFixed(2));
+            numerics[4].innerText = parseFloat(Number(deliverySea).toFixed(2));
+            numerics[5].innerText = parseFloat(Number(priceSwift).toFixed(2));
+            numerics[6].innerText = parseFloat(Number(clearance).toFixed(2));
+            numerics[7].innerText = parseFloat(Number(accompaniment).toFixed(2));
+            numerics[8].innerText = 0;
+            numerics[9].innerText = parseFloat(Number(allPrice).toFixed(2));
+            numerics[10].innerText = parseFloat(Number(payment_Three).toFixed(2)) + " $";
+        }
 
-  const collection = [700, 700, 700, 800, 800, 700, 900, 900, 900, 900];
-  const crossBorder = [139, 99, 89, 185, 149, 139, 245, 149, 379, 189];
-  const processingDocs = [249, 149, 269, 229, 259, 249, 229, 252, 189, 159];
-
-  const lotAuctionBase = priceCar + crossBorder[country] + processingDocs[country];
-  const deliveryUkraineBase = 1200 + localDeliveryEurope + (adressDelivery ? 400 : 0) + buttonCC;
-  const brokerBase = 250;
-  const certificateBase = 150;
-  const swiftBase = 100 + (0.032 * (lotAuctionBase + collection[country]));
-
-  const hiddenMarkupTotal = getDynamicMarkupEurope(priceCar);
-  const markup = distributeMarkup(hiddenMarkupTotal, {
-    lot: 0.30,
-    ukr: 0.28,
-    broker: 0.12,
-    certificate: 0.15,
-    swift: 0.15,
-  });
-
-  const lotAuction = lotAuctionBase + markup.lot;
-  const deliveryUkraine = deliveryUkraineBase + markup.ukr;
-  const broker = brokerBase + markup.broker;
-  const certificate = certificateBase + markup.certificate;
-  const swift = swiftBase + markup.swift;
-
-  const pliceCarOlso = priceCar + 300 + localDeliveryEurope;
-  let basikExcise = 0;
-  if (europeFuel == 0) {
-      if (engineCapacity <= 3000) basikExcise = 50;
-      else basikExcise = 100;
-  } else if (europeFuel === 1) {
-      if (engineCapacity <= 3500) basikExcise = 75;
-      else basikExcise = 150;
-  } else if (europeFuel === 2) {
-      basikExcise = 0;
-  }
-
-  let coeffYear = 2024 - yearRelease;
-  if (coeffYear < 1) coeffYear = 1;
-  else if (coeffYear > 15) coeffYear = 15;
-
-  const excise = basikExcise * (engineCapacity / 1000) * coeffYear;
-  const toll = pliceCarOlso * 0.1;
-  const pdv = (pliceCarOlso + toll + excise) * 0.2;
-  const customsclearance = type === 1 ? toll + excise + pdv : 0;
-
-  const allPriceCar = lotAuction + deliveryUkraine + broker + certificate + swift + customsclearance;
-  const paymentThree = lotAuction + deliveryUkraine + broker + certificate + swift;
-
-  setText('eu-out-lot', lotAuction, ' €');
-  setText('eu-out-ukr', deliveryUkraine, ' €');
-  setText('eu-out-broker', broker, ' €');
-  setText('eu-out-certificate', certificate, ' €');
-  setText('eu-out-swift', swift, ' €');
-  setText('eu-out-clearance', customsclearance, ' €');
-  setText('eu-out-total', allPriceCar);
-  setText('eu-out-pay', paymentThree, ' €');
-}
-
-function initTabs() {
-  const buttons = document.querySelectorAll('.tab-btn');
-  const tabs = document.querySelectorAll('.calculate-wrapper');
-  buttons.forEach(button => {
-    button.addEventListener('click', () => {
-      buttons.forEach(item => item.classList.remove('active'));
-      tabs.forEach(tab => tab.classList.remove('active'));
-      button.classList.add('active');
-      document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+        setExchangeValue(allPrice.toFixed(2));
     });
-  });
+
+    function getClearance(carPrice, auctionFee, yearRelease, engineCapacity, fuelType) {
+        if (fuelType === 2) return engineCapacity;
+
+        carPrice = carPrice + auctionFee + 1600;
+
+        let basikExcise = 0;
+        if (fuelType == 0) {
+            if (engineCapacity <= 3000) basikExcise = 50;
+            else basikExcise = 100;
+        } else if (fuelType === 1) {
+            if (engineCapacity <= 3500) basikExcise = 75;
+            else basikExcise = 150;
+        }
+
+        let coeffYear = 2024 - yearRelease;
+        if (coeffYear < 1) coeffYear = 1;
+        else if (coeffYear > 15) coeffYear = 15;
+
+        const excise = basikExcise * (engineCapacity / 1000) * coeffYear;
+        const toll = carPrice * 0.1;
+        const pdv = (carPrice + toll + excise) * 0.2;
+
+        return toll + excise + pdv;
+    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  populateStates();
-  initTabs();
-  document.getElementById('state-USA-search').addEventListener('input', filterStates);
-  document.getElementById('btn-calc-USA').addEventListener('click', calcUSA);
-  document.getElementById('btn-calc-Europe').addEventListener('click', () => calculateEurope(1));
-  document.getElementById('btn-calc-clearence-Europe').addEventListener('click', () => calculateEurope(2));
+function EUROPE() {
+    if (!calc_EUROPE) return;
+
+    let type = 1;
+
+    const collection = [700, 700, 700, 800, 800, 700, 900, 900, 900, 900];
+    const crossBorder = [139, 99, 89, 185, 149, 139, 245, 149, 379, 189];
+    const processingDocs = [249, 149, 269, 229, 259, 249, 229, 252, 189, 159];
+
+    const btn_calc_Europe_Price = calc_EUROPE.querySelector(".btn-calc-Europe");
+    const btn_calc_Europe_clearance = calc_EUROPE.querySelector(".btn-calc-clearence-Europe");
+
+    function calculate_CC(country, priceCar, priceService, priceEurope, yearRelease, engineCapacity, type) {
+        const priceCarAuction = priceCar + crossBorder[country] + processingDocs[country];
+        const broker = 250;
+        const certificate = 100;
+        const priceColl = collection[country];
+        const priceSwift = (100 + (0.032 * (priceCarAuction + priceColl)));
+        const buttonCC = 250; // кнопка автоматично
+        const allPriceNoUK = priceCarAuction + priceEurope + broker + certificate + priceService + priceSwift + buttonCC;
+
+        let priceUK = 0;
+        if (allPriceNoUK < 4000) priceUK = 1300;
+        if (allPriceNoUK > 4000 && allPriceNoUK < 6000) priceUK = 1650;
+        if (allPriceNoUK > 6000) priceUK = 1800;
+
+        const fee = (priceCarAuction + priceEurope + priceUK) * 0.005;
+
+        const pliceCarOlso = priceCar + 300 + priceEurope;
+
+        let basikExcise = 0;
+        if (europe_fuel == 0) {
+            if (engineCapacity <= 3000) basikExcise = 50;
+            else basikExcise = 100;
+        } else if (europe_fuel === 1) {
+            if (engineCapacity <= 3500) basikExcise = 75;
+            else basikExcise = 150;
+        }
+
+        let coeffYear = 2024 - yearRelease;
+        if (coeffYear < 1) coeffYear = 1;
+        else if (coeffYear > 15) coeffYear = 15;
+
+        const excise = basikExcise * (engineCapacity / 1000) * coeffYear;
+        const toll = pliceCarOlso * 0.1;
+        const pdv = (pliceCarOlso + toll + excise) * 0.2;
+        const customsclearance = type === 1 ? toll + excise + pdv : 0;
+
+        const allPriceCar = allPriceNoUK + priceUK + 100 + fee + customsclearance + (type === 1 ? 0 : -150);
+        const payment_Three = priceCarAuction + priceEurope + priceUK + broker + 350 + priceSwift;
+
+        const outputs_EUROPE = calc_EUROPE.querySelector(".card-item.outputs");
+        if (setFinalOnlyOutput(outputs_EUROPE, allPriceCar, payment_Three, '€')) {
+            setExchangeValue(allPriceCar.toFixed(2));
+            return;
+        }
+
+        const numerics = outputs_EUROPE?.querySelectorAll(".item .numeric");
+        if (numerics && numerics.length >= 9) {
+            numerics[0].innerText = parseFloat((Number(priceCarAuction)).toFixed(2));
+            numerics[1].innerText = parseFloat(Number(priceEurope).toFixed(2));
+            numerics[2].innerText = parseFloat(Number(priceService).toFixed(2));
+            numerics[3].innerText = parseFloat(Number(priceSwift).toFixed(2));
+            numerics[4].innerText = parseFloat(Number(customsclearance).toFixed(2));
+            numerics[5].innerText = parseFloat(Number(buttonCC).toFixed(2));
+            numerics[6].innerText = 0;
+            numerics[7].innerText = parseFloat(Number(allPriceCar).toFixed(2));
+            numerics[8].innerText = parseFloat(Number(payment_Three).toFixed(2)) + " €";
+        }
+
+        setExchangeValue(allPriceCar.toFixed(2));
+    }
+
+    if (btn_calc_Europe_Price) {
+        btn_calc_Europe_Price.addEventListener('click', () => {
+            const l_price_Europe = calc_EUROPE.querySelector("#price-Europe");
+            const l_delivery_Europe = calc_EUROPE.querySelector("#delivery-Europe");
+            const l_year_Europe = calc_EUROPE.querySelector("#year-Europe");
+            const l_engine_capacity_Europe = calc_EUROPE.querySelector("#engine-capacity-Europe");
+
+            if (!l_price_Europe?.value) return l_price_Europe.focus();
+            if (!l_delivery_Europe?.value) return l_delivery_Europe.focus();
+            if (!l_year_Europe?.value) return l_year_Europe.focus();
+            if (!l_engine_capacity_Europe?.value) return l_engine_capacity_Europe.focus();
+
+            const priceCar = Number(l_price_Europe.value);
+            const priceEurope = Number(l_delivery_Europe.value);
+            const priceService = 550;
+            const yearRelease = Number(l_year_Europe.value);
+            const engineCapacity = Number(l_engine_capacity_Europe.value);
+
+            type = 1;
+            calculate_CC(europe_country, priceCar, priceService, priceEurope, yearRelease, engineCapacity, type);
+        });
+    }
+
+    if (btn_calc_Europe_clearance) {
+        btn_calc_Europe_clearance.addEventListener('click', () => {
+            const l_price_Europe = calc_EUROPE.querySelector("#price-Europe");
+            const l_delivery_Europe = calc_EUROPE.querySelector("#delivery-Europe");
+
+            if (!l_price_Europe?.value) return l_price_Europe.focus();
+            if (!l_delivery_Europe?.value) return l_delivery_Europe.focus();
+
+            const priceCar = Number(l_price_Europe.value);
+            const priceEurope = Number(l_delivery_Europe.value);
+            const priceService = 550;
+
+            type = 2;
+            calculate_CC(europe_country, priceCar, priceService, priceEurope, 0, 0, type);
+        });
+    }
+}
+
+function courseInit() {
+    function modal() {
+        const settingsSVG = document.querySelector('.settings-svg');
+        const modal = document.querySelector('.modal-settings');
+        if (!settingsSVG || !modal) return;
+
+        const fon = modal.querySelector('.fon');
+        const valuesItems = modal.querySelector('.main .values-items');
+        const saveCross = modal.querySelector('.main .save-cross');
+        if (!valuesItems || !saveCross) return;
+
+        const items = valuesItems.querySelectorAll('.item');
+        items.forEach(item => {
+            const input = item.querySelector('input');
+            if (!input) return;
+
+            const id = input.getAttribute('id');
+            if (id === 'EUR_USD') input.value = eurToUSD;
+            else if (id === 'USD_EUR') input.value = usdToEUR;
+            else if (id === 'USD_UAH') input.value = course['USD'];
+            else if (id === 'EUR_UAH') input.value = course['EUR'];
+        });
+
+        settingsSVG.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+
+        fon?.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        saveCross.addEventListener('click', () => {
+            modal.classList.remove('active');
+
+            items.forEach(item => {
+                const input = item.querySelector('input');
+                if (!input) return;
+
+                const id = input.getAttribute('id');
+                if (id === 'EUR_USD') eurToUSD = Number(input.value);
+                else if (id === 'USD_EUR') usdToEUR = Number(input.value);
+                else if (id === 'USD_UAH') course['USD'] = Number(input.value);
+                else if (id === 'EUR_UAH') course['EUR'] = Number(input.value);
+            });
+
+            setExchangeValue(NaN);
+            if (setLabel) setLabel();
+        });
+    }
+
+    function converter() {
+        const converter = document.querySelector('.converter-wrapper .converter');
+        if (!converter) return;
+
+        const items = converter.querySelectorAll('.input-item');
+        if (items.length < 2) return;
+
+        let input = [];
+        input[0] = items[0].querySelector('input');
+        input[1] = items[1].querySelector('input');
+        if (!input[0] || !input[1]) return;
+
+        input[0].addEventListener('input', () => {
+            const col = Number(input[0].value);
+            if (Number.isNaN(col)) return;
+
+            let value = 0;
+            if (selectInfo[0] === "EUR" && selectInfo[1] === "USD") value = col * eurToUSD;
+            else if (selectInfo[0] === "USD" && selectInfo[1] === "EUR") value = col / usdToEUR;
+            else value = (col * Number(course[selectInfo[0]])) / course[selectInfo[1]];
+
+            input[1].value = value.toFixed(2);
+        });
+    }
+
+    setLabel = function() {
+        const input = document.querySelector('.converter-wrapper .converter .input-item input');
+        const courseLabel = document.querySelector('.converter-wrapper .course');
+        if (!input || !courseLabel) return;
+
+        let value = course[selectInfo[0]] / course[selectInfo[1]];
+        if (selectInfo[0] === "EUR" && selectInfo[1] === "USD") value = eurToUSD;
+        else if (selectInfo[0] === "USD" && selectInfo[1] === "EUR") value = 1 / usdToEUR;
+
+        courseLabel.innerHTML = `<span class="input-currency">1 ${selectInfo[0]}</span><span>=</span><span class="output-currency">${value.toFixed(2)} ${selectInfo[1]}</span>`;
+
+        const inputEvent = new Event('input', {
+            bubbles: true,
+            cancelable: true
+        });
+        input.dispatchEvent(inputEvent);
+    };
+
+    modal();
+    converter();
+    if (setLabel) setLabel();
+}
+
+function setExchangeValue(value) {
+    const input = document.querySelector('.converter-wrapper .converter .input-item input');
+    if (input) {
+        if (!Number.isNaN(Number(value))) input.value = value;
+        const inputEvent = new Event('input', {
+            bubbles: true,
+            cancelable: true
+        });
+        input.dispatchEvent(inputEvent);
+    }
+}
+
+window.addEventListener('load', () => {
+    tabsInit();
+    selects();
+    USA();
+    EUROPE();
+    courseInit();
 });
