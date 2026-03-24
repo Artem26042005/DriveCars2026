@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drive Cars Calculator</title>
+  <link rel="stylesheet" href="style.css?v=3.0" />
+  <script src="script.js?v=3.0" defer></script>
+</head>
+<body>
+  <div class="page">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="usa">США</button>
+      <button class="tab" data-tab="europe">Європа</button>
+    </div>
+
+    <section class="panel active" id="panel-usa">
+      <div class="card form-card">
+        <h1>Калькулятор США</h1>
+        <div class="grid">
+          <label class="field">
+            <span>Вартість авто</span>
+            <input type="number" id="price-USA" placeholder="Введіть значення" />
+          </label>
+
+          <div class="field">
+            <span>Штат</span>
+            <div class="select" id="usa-state-select">
+              <button type="button" class="select-trigger">
+                <span class="select-label" id="usa-state-label">ABILENE - TX</span>
+                <span class="select-arrow">▾</span>
+              </button>
+              <div class="select-menu">
+                <div class="search-wrap">
+                  <input type="text" id="usa-state-search" placeholder="Пошук штату" />
+                </div>
+                <div class="options" id="usa-state-options"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <span>Тип двигуна</span>
+            <div class="select simple-select" data-target="usa-fuel">
+              <button type="button" class="select-trigger">
+                <span class="select-label">Бензиновий</span>
+                <span class="select-arrow">▾</span>
+              </button>
+              <div class="select-menu">
+                <div class="options">
+                  <button type="button" class="option active" data-value="0">Бензиновий</button>
+                  <button type="button" class="option" data-value="1">Дизельний</button>
+                  <button type="button" class="option" data-value="2">Електричний</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>Об’єм двигуна</span>
+            <input type="number" id="engine-capacity-USA" placeholder="Введіть значення" />
+          </label>
+
+          <label class="field">
+            <span>Рік випуску автомобіля</span>
+            <input type="number" id="year-USA" placeholder="Введіть значення" />
+          </label>
+        </div>
+        <button class="calc-btn" id="btn-calc-USA">Розрахувати вартість</button>
+      </div>
+
+      <div class="card result-card">
+        <div class="result-kicker">Розрахунок по США</div>
+        <div class="result-title">Кінцева вартість авто</div>
+        <div class="result-price"><span id="usa-total">0.00</span> <b>$</b></div>
+        <div class="result-note">
+          <span>Оплатити протягом 3-х днів</span>
+          <strong id="usa-pay">0.00 $</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-europe">
+      <div class="card form-card">
+        <h1>Калькулятор Європа</h1>
+        <div class="grid">
+          <div class="field">
+            <span>Країна</span>
+            <div class="select simple-select" data-target="europe-country">
+              <button type="button" class="select-trigger">
+                <span class="select-label">DE</span>
+                <span class="select-arrow">▾</span>
+              </button>
+              <div class="select-menu">
+                <div class="options">
+                  <button type="button" class="option active" data-value="0">DE</button>
+                  <button type="button" class="option" data-value="1">PL</button>
+                  <button type="button" class="option" data-value="2">FR</button>
+                  <button type="button" class="option" data-value="3">NL</button>
+                  <button type="button" class="option" data-value="4">AT</button>
+                  <button type="button" class="option" data-value="5">BE</button>
+                  <button type="button" class="option" data-value="6">ES</button>
+                  <button type="button" class="option" data-value="7">SE</button>
+                  <button type="button" class="option" data-value="8">IT</button>
+                  <button type="button" class="option" data-value="9">PT</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>Рік випуску автомобіля</span>
+            <input type="number" id="year-Europe" placeholder="Введіть значення" />
+          </label>
+
+          <label class="field">
+            <span>Вартість авто</span>
+            <input type="number" id="price-Europe" placeholder="Введіть значення" />
+          </label>
+
+          <div class="field">
+            <span>Тип двигуна</span>
+            <div class="select simple-select" data-target="europe-fuel">
+              <button type="button" class="select-trigger">
+                <span class="select-label">Бензиновий</span>
+                <span class="select-arrow">▾</span>
+              </button>
+              <div class="select-menu">
+                <div class="options">
+                  <button type="button" class="option active" data-value="0">Бензиновий</button>
+                  <button type="button" class="option" data-value="1">Дизельний</button>
+                  <button type="button" class="option" data-value="2">Електричний</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>Доставка по Європі</span>
+            <input type="number" id="delivery-Europe" placeholder="Введіть значення" />
+          </label>
+
+          <label class="field">
+            <span>Об’єм двигуна</span>
+            <input type="number" id="engine-capacity-Europe" placeholder="Введіть значення" />
+          </label>
+        </div>
+
+        <div class="btn-row">
+          <button class="calc-btn" id="btn-calc-Europe">Розрахувати вартість</button>
+          <button class="calc-btn secondary" id="btn-calc-clearence-Europe">Без розмитнення</button>
+        </div>
+      </div>
+
+      <div class="card result-card">
+        <div class="result-kicker">Розрахунок по Європі</div>
+        <div class="result-title">Кінцева вартість авто</div>
+        <div class="result-price"><span id="europe-total">0.00</span> <b>€</b></div>
+        <div class="result-note">
+          <span>Оплатити протягом 3-х днів</span>
+          <strong id="europe-pay">0.00 €</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
